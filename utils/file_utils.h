@@ -10,5 +10,8 @@ struct ImageJob
     cv::Mat     img;
 };
 
+enum class Backend { CPU, GPU };
+enum class ProcessType { Blur, Scale };
+
 std::vector<ImageJob> loadImagesFromDirectory(const std::string &dir_path);
-std::string           getOutputFilename(const std::string &input_path, bool is_cup);
+std::string           getOutputFilename(const std::string &input_path, ProcessType type, Backend backend);

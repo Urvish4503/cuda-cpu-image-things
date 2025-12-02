@@ -35,9 +35,9 @@ std::vector<ImageJob> loadImagesFromDirectory(const std::string &dir_path)
 }
 
 
-std::string getOutputFilename(const std::string &input_path, bool is_cup)
+std::string getOutputFilename(const std::string &input_path, ProcessType type, Backend backend)
 {
-    // Get current timestamp
+    // Timestamp
     auto now  = std::chrono::system_clock::now();
     auto time = std::chrono::system_clock::to_time_t(now);
     auto ms   = std::chrono::duration_cast<std::chrono::milliseconds>(now.time_since_epoch()) % 1000;
@@ -46,7 +46,7 @@ std::string getOutputFilename(const std::string &input_path, bool is_cup)
     timestamp << std::put_time(std::localtime(&time), "%Y%m%d_%H%M%S") << "_" << std::setfill('0') << std::setw(3)
               << ms.count();
 
-    // Parse path using filesystem
+    // Paths
     std::filesystem::path inputFilePath(input_path);
     std::filesystem::path directory = inputFilePath.parent_path();
     if (directory.empty())
@@ -55,15 +55,19 @@ std::string getOutputFilename(const std::string &input_path, bool is_cup)
     std::string base = inputFilePath.stem().string();
     std::string ext  = inputFilePath.extension().string();
 
-    // Create output directory
+    // out/ directory
     std::filesystem::path outputDir = directory / "out";
     std::filesystem::create_directories(outputDir);
 
-    // Construct final output path
-    if (is_cup) {
-        std::filesystem::path outputPath = outputDir / (base + "_cup_processed_" + timestamp.str() + ext);
-        return outputPath.string();
-    }
-    std::filesystem::path outputPath = outputDir / (base + "_gpu_processed_" + timestamp.str() + ext);
+    // Backend string
+    std::string backend_str = (backend == Backend::CPU) ? "cpu" : "gpu";
+
+    // Process type string
+    std::string type_str = (type == ProcessType::Blur) ? "blur" : "scale";
+
+    // Final filename
+    std::filesystem::path outputPath =
+        outputDir / (base + "_" + type_str + "_" + backend_str + "_" + timestamp.str() + ext);
+
     return outputPath.string();
 }
